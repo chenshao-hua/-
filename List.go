@@ -1,5 +1,6 @@
 /****单链表*****/
 
+/*
 package main
 
 import "fmt"
@@ -103,7 +104,7 @@ func (list *List)Print(){
 func main(){
 	list:=CreateList()
 	fmt.Println("list is null or?: ",list.IsNull())
-	var m Method
+	var m Method   //或者var m Method=CreateList()
 	m=list
 	m.Insert(1,3)
 	m.Insert(2,7)
@@ -112,3 +113,5 @@ func main(){
 
 	m.Print()
 }
+
+*/
