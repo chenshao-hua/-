@@ -1,69 +1,71 @@
 /*
-题目描述：
-给定一个字母矩阵,所有的字母都与上下左右四个方向上的字母相连.给定一个字符串,
-求字符串能不能在矩阵中寻找到.
+Given an mxn board and a word,find if the word exists in the word.
 
-示例 :
-Input:board=[['A','B','C','E'],
-             ['S','F','C','S']
-             ['A','D','E','E']],word="ABCCED"
+The word can be constructed from letters of sequentially "adjacents" cells,
+where "adjacents" cells are horizontally or vertically neighboring.The same
+cell may not be used more than once.
+
+Example 1:
+Input:board=[["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]],word="ABCCED"
 Output:true
-从左上角的'A'开始,可以先向右、再向下、最后向左,找到连续的"ABCCED";
+
+Example 2:
+Input:board=[["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]],word = "ABCB"
+Output:false
+
 
 解题思路:
-不同于排列组合的问题，本题采用的并不是修改输出方式，而是修改访问标记。在我们
-对任意位置进行深度优先搜索时，我们先标记当前位置为已访问，已避免重复遍历（可以
-防止向右搜索后又向左返回）;在所有的可能都搜索完成后,再回改当前位置为未访问，防止
-干扰其它位置的搜索到当前位置.使用回溯法，可以只对一个二维的访问矩阵进行修改,而不是
-把每次的搜索状态作为一个新对象传入递归函数中.
-
+利用回溯法可以
 */
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
 class Solution{
 public:
-    Solution(vector<vector<char>>& _charword,string& _word):charword(_charword),word(_word){}
-    bool wordsearch(){
-        if(charword.empty())
-           return false;
-        int m=charword.size(),n=charword[0].size();
-        vector<vector<bool>> visited(m,vector<bool>(n,false));
-        bool find=false;
-        for(auto i=0;i<m;i++){
-            for(auto j=0;j<n;j++){
-                backtrack(i,j,charword,find,visited,0);
+    bool exist(vector<vector<char>>& board,string word){
+        m=board.size();
+        assert(m>0);
+        n=board[0].size();
+        visited=vector<vector<bool>>(m,vector<bool>(n,false));
+        for(auto i=0;i<board.size();i++){
+            for(auto j=0;j<board[0].size();j++){
+                if(searchWord(board,word,0,i,j))
+                    return true;
             }
         }
-        return find;
+        return false;
     }
 private:
-    vector<vector<char>> charword;
-    string word;
-    void backtrack(int i,int j,vector<vector<char>>& board,bool& find,vector<vector<bool>>& visited,int pos){
-        if(i<0||i>=board.size()||j<0||j>=board[0].size())
-           return;
-        if(visited[i][j]||find||board[i][j]!=word[pos])
-           return;
-        if(pos==word.size()-1){
-            find=true;
-            return;
+    int dir[4][2]={{-1,0},{0,1},{1,0},{0,-1}};
+    int m,n;
+    bool inArea(int x,int y){
+        return x>=0&&x<m&&y>=0&&y<n;
+    }
+    vector<vector<bool>> visited;
+    /*从board[x][y]开始,寻找word[index...word.size()-1]*/
+    bool searchWord(const vector<vector<char>>& board,const string& word,int index,int x,int y){
+        if(index==word.size()-1){
+            return board[x][y]==word[index];
         }
-        visited[i][j]=true;  /*修改当前节点状态*/
-        
-        /*递归子节点*/
-        backtrack(i+1,j,board,find,visited,pos+1);
-        backtrack(i-1,j,board,find,visited,pos+1);
-        backtrack(i,j+1,board,find,visited,pos+1);
-        backtrack(i,j-1,board,find,visited,pos+1);
+        if(board[x][y]==word[index]){
+            visited[x][y]=true;
+            /*从x,y四个方向寻找*/
+            for(auto i=0;i<4;i++){
+                int n_x=x+dir[i][0],n_y=y+dir[i][1];
+                if(inArea(n_x,n_y)&&!visited[n_x][n_y]&&searchWord(board,word,index+1,n_x,n_y))
+                       return true;
+            }
+            visited[x][y]=false;
+        }
+        return false;
     }
 };
 
 int main(int argc,char* argv[]){
-    vector<vector<char>> charword={{'A','B','D','E'}, {'S','C','C','S'},{'A','D','E','E'}};
-    string word="ABCCED";
-    cout<<Solution(charword,word).wordsearch()<<endl;
+    vector<vector<char>> board={{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
+    cout<<Solution().exist(board,"ABCB")<<endl;
     return 0;
 }
